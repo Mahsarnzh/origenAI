@@ -15,8 +15,7 @@ Follow these steps to set up and run the project on your local machine.
 For mac users:
 
 ### Installation
-
-1. Clone the repository:
+Clone the repository:
 
    ```
    git clone https://github.com/Mahsarnzh/origenAI.git
@@ -24,24 +23,24 @@ For mac users:
 
 ### Navigate to the project directory
 
-```
-cd your-project
-```
+  ```
+  cd your-project
+  ```
 
 ### Create a virtual environment:
 
-```
-python3.11 -m venv venv
-```
+  ```
+  python3.11 -m venv venv
+  ```
 
 ### Activate the virtual environment:
 
-```
-source venv/bin/activate
-```
+  ```
+  source venv/bin/activate
+  ```
 
 
 ### Install dependencies:
-```
-pip install -r requirements.txt
-```
+  ```
+  pip install -r requirements.txt
+  ```
