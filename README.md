@@ -1,6 +1,8 @@
 # Origen AI
 
-Welcome to your project! This repository contains an awesome project that does [provide a brief description of your project].
+Welcome to my project! This repository contains an awesome project that contains two parts:
+1. Question 1: Two deep learning methods for predicting WOPR data using LSTM and CNN.
+2. Question 2: Two methods for predicting velocitie and pressure using PINNs.
 
 ## Getting Started
 
