@@ -3,7 +3,7 @@ import numpy as np
 
 
 def load_data():
-    directory = "./origen_interview_data/"
+    directory = os.path.realpath("../../origen_interview_data/")
     input_names = {
         "DEPTH",
         "TRANY",
@@ -31,7 +31,7 @@ def load_data():
             raise e
 
     for root, dirs, files in os.walk(directory, topdown=False):
-        root_parts = root.split("/")
+        root_parts = root.split("/")[-3:]
         assert len(root_parts) == 3, "too many parts in %s" % root
         input_name = root_parts[-1]
 
@@ -52,5 +52,6 @@ def load_data():
                 target_data[input_name, dataset_name] = np_load(
                     input_name, file, realpath
                 )
-
+    assert len(data) > 0, "failed to load data"
+    assert len(target_data) > 0, "failed to load data and target data"
     return data, target_data
