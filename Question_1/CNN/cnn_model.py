@@ -1,8 +1,6 @@
 import numpy as np
 from tensorflow.keras import layers, models
-
-
-from data_loblackading import load_datapython
+from data_loading import load_data
 
 data, target_data = load_data()
 
