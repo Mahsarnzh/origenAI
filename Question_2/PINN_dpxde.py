@@ -1,4 +1,5 @@
 """Backend supported: tensorflow.compat.v1, tensorflow, pytorch, paddle"""
+
 import deepxde as dde
 import numpy as np
 
@@ -34,16 +35,17 @@ def pde(x, u):
     return [momentum_x, momentum_y, continuity]
 
 
-
-
 def boundary_left(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[0], 0)
+
 
 def boundary_right(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[0], 1)
 
+
 def boundary_bottom(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[1], 0)
+
 
 def boundary_top(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[1], 1)
@@ -71,7 +73,7 @@ boundary_condition_u = dde.icbc.DirichletBC(
     spatial_domain,
     lambda x: 1.0 if any(dde.utils.isclose(x[0], 0)) else 1.0,
     lambda _, on_boundary: on_boundary,
-    component=0
+    component=0,
 )
 
 
@@ -79,7 +81,7 @@ boundary_condition_v = dde.icbc.DirichletBC(
     spatial_domain,
     lambda x: 0.0 if any(dde.utils.isclose(x[1], 0)) else 0.0,
     lambda _, on_boundary: on_boundary,
-    component=1
+    component=1,
 )
 
 
@@ -104,15 +106,14 @@ model.compile("L-BFGS")
 losshistory, train_state = model.train()
 
 
-
 ###### Data.npy
-file_path = 'Data.npy'
+file_path = "Data.npy"
 data_array = np.load(file_path, allow_pickle=True)
-pressure = data_array.tolist()['pressure']
-u_velocity = data_array.tolist()['u_velocity']
-v_velocity = data_array.tolist()['v_velocity']
-x = data_array.tolist()['x']
-y = data_array.tolist()['y']
+pressure = data_array.tolist()["pressure"]
+u_velocity = data_array.tolist()["u_velocity"]
+v_velocity = data_array.tolist()["v_velocity"]
+x = data_array.tolist()["x"]
+y = data_array.tolist()["y"]
 P_star = pressure  # N x T
 ######
 
