@@ -9,11 +9,33 @@ Follow these steps to set up and run the project on your local machine.
 ### Prerequisites
 
 - Python 3.11
-- Git
+- pip
+
+  
+For mac users:
 
 ### Installation
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/your-username/your-project.git
+   ```
+   git clone https://github.com/Mahsarnzh/origenAI.git
+   ```
+
+### Navigate to the project directory
+
+```
+cd your-project
+```
+
+### Create a virtual environment:
+
+```
+python3.11 -m venv venv
+```
+
+### Activate the virtual environment:
+
+```
+source venv/bin/activate
+```
