@@ -1,7 +1,6 @@
 """
 @author: Mahsa Raeisinezhad
 """
-import sys
 
 import torch
 import torch.nn as nn
@@ -11,121 +10,69 @@ import seaborn as sns
 import matplotlib.animation as animation
 
 Re = 100
-nu = 1 / Re
+nu = 1/Re
 
-
-# noinspection PyPep8Naming
-class NavierStokes:
+class NavierStokes():
     def __init__(self, X, Y, u, v):
 
-        self.x = (
-            torch.tensor(X, dtype=torch.float32).clone().detach().requires_grad_(True)
-        )
-        self.y = (
-            torch.tensor(Y, dtype=torch.float32).clone().detach().requires_grad_(True)
-        )
+        self.x = torch.tensor(X, dtype=torch.float32).clone().detach().requires_grad_(True)
+        self.y = torch.tensor(Y, dtype=torch.float32).clone().detach().requires_grad_(True)
 
         self.u = torch.tensor(u, dtype=torch.float32)
         self.v = torch.tensor(v, dtype=torch.float32)
 
-        # null vector to test against f and g:
+        #null vector to test against f and g:
         self.null = torch.zeros((self.x.shape[0], 1))
 
         # initialize network:
         self.network()
 
-        self.optimizer = torch.optim.LBFGS(
-            self.net.parameters(),
-            lr=1,
-            max_iter=2000,
-            max_eval=50000,
-            history_size=50,
-            tolerance_grad=1e-05,
-            tolerance_change=0.5 * np.finfo(float).eps,
-            line_search_fn="strong_wolfe",
-        )
+        self.optimizer = torch.optim.LBFGS(self.net.parameters(), lr=1, max_iter=2000, max_eval=50000,
+                                           history_size=50, tolerance_grad=1e-05, tolerance_change=0.5 * np.finfo(float).eps,
+                                           line_search_fn="strong_wolfe")
 
         self.mse = nn.MSELoss()
 
-        # loss
+        #loss
         self.ls = 0
 
-        # iteration number
+        #iteration number
         self.iter = 0
 
     def network(self):
 
         self.net = nn.Sequential(
-            nn.Linear(2, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.ReLU(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 20),
-            nn.Tanh(),
-            nn.Linear(20, 2),
-        )
+            nn.Linear(2, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.ReLU(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 20), nn.Tanh(),
+            nn.Linear(20, 2))
 
-    def forward(self, x, y):
+    def function(self, x, y):
 
         res = self.net(torch.hstack((x, y)))
         psi, p = res[:, 0:1], res[:, 1:2]
 
-        u = torch.autograd.grad(
-            psi, y, grad_outputs=torch.ones_like(psi), create_graph=True
-        )[
-            0
-        ]  # retain_graph=True,
-        v = (
-            -1.0
-            * torch.autograd.grad(
-                psi, x, grad_outputs=torch.ones_like(psi), create_graph=True
-            )[0]
-        )
+        u = torch.autograd.grad(psi, y, grad_outputs=torch.ones_like(psi), create_graph=True)[0] #retain_graph=True,
+        v = -1.*torch.autograd.grad(psi, x, grad_outputs=torch.ones_like(psi), create_graph=True)[0]
 
-        u_x = torch.autograd.grad(
-            u, x, grad_outputs=torch.ones_like(u), create_graph=True
-        )[0]
-        u_xx = torch.autograd.grad(
-            u_x, x, grad_outputs=torch.ones_like(u_x), create_graph=True
-        )[0]
-        u_y = torch.autograd.grad(
-            u, y, grad_outputs=torch.ones_like(u), create_graph=True
-        )[0]
-        u_yy = torch.autograd.grad(
-            u_y, y, grad_outputs=torch.ones_like(u_y), create_graph=True
-        )[0]
+        u_x = torch.autograd.grad(u, x, grad_outputs=torch.ones_like(u), create_graph=True)[0]
+        u_xx = torch.autograd.grad(u_x, x, grad_outputs=torch.ones_like(u_x), create_graph=True)[0]
+        u_y = torch.autograd.grad(u, y, grad_outputs=torch.ones_like(u), create_graph=True)[0]
+        u_yy = torch.autograd.grad(u_y, y, grad_outputs=torch.ones_like(u_y), create_graph=True)[0]
 
-        v_x = torch.autograd.grad(
-            v, x, grad_outputs=torch.ones_like(v), create_graph=True
-        )[0]
-        v_xx = torch.autograd.grad(
-            v_x, x, grad_outputs=torch.ones_like(v_x), create_graph=True
-        )[0]
-        v_y = torch.autograd.grad(
-            v, y, grad_outputs=torch.ones_like(v), create_graph=True
-        )[0]
-        v_yy = torch.autograd.grad(
-            v_y, y, grad_outputs=torch.ones_like(v_y), create_graph=True
-        )[0]
+        v_x = torch.autograd.grad(v, x, grad_outputs=torch.ones_like(v), create_graph=True)[0]
+        v_xx = torch.autograd.grad(v_x, x, grad_outputs=torch.ones_like(v_x), create_graph=True)[0]
+        v_y = torch.autograd.grad(v, y, grad_outputs=torch.ones_like(v), create_graph=True)[0]
+        v_yy = torch.autograd.grad(v_y, y, grad_outputs=torch.ones_like(v_y), create_graph=True)[0]
 
-        p_x = torch.autograd.grad(
-            p, x, grad_outputs=torch.ones_like(p), create_graph=True
-        )[0]
-        p_y = torch.autograd.grad(
-            p, y, grad_outputs=torch.ones_like(p), create_graph=True
-        )[0]
+        p_x = torch.autograd.grad(p, x, grad_outputs=torch.ones_like(p), create_graph=True)[0]
+        p_y = torch.autograd.grad(p, y, grad_outputs=torch.ones_like(p), create_graph=True)[0]
 
         momentum_x = u * u_x + v * u_y + p_x - nu * (u_xx + u_yy)
         momentum_y = u * v_x + v * v_y + p_y - nu * (v_xx + v_yy)
@@ -138,14 +85,7 @@ class NavierStokes:
         self.optimizer.zero_grad()
 
         # u, v, p, g and f predictions:
-        (
-            u_prediction,
-            v_prediction,
-            p_prediction,
-            momentum_x_pred,
-            momentum_y_pred,
-            continuity_pred,
-        ) = self.forward(self.x, self.y)
+        u_prediction, v_prediction, p_prediction, momentum_x_pred, momentum_y_pred, continuity_pred  = self.function(self.x, self.y)
 
         # calculate losses
         u_loss = self.mse(u_prediction, self.u)
@@ -160,9 +100,12 @@ class NavierStokes:
 
         self.iter += 1
         if not self.iter % 1:
-            print("Iteration: {:}, Loss: {:0.6f}".format(self.iter, self.ls))
+            print('Iteration: {:}, Loss: {:0.6f}'.format(self.iter, self.ls))
 
         return self.ls
+
+
+
 
     def train(self, num_epochs=100):
         # Training loop
@@ -170,12 +113,17 @@ class NavierStokes:
 
         for epoch in range(num_epochs):
             self.optimizer.step(self.closure)
-            print("Epoch: {:}, Loss: {:0.6f}".format(epoch + 1, self.ls))
+            print('Epoch: {:}, Loss: {:0.6f}'.format(epoch + 1, self.ls))
 
-    def plot_results(self, x_test, y_test, x, y, u_velocity, v_velocity, pressure):
+    def plot_results(self, x_test, y_test, x, y, u_velocity, v_velocity):
         self.net.eval()
 
-        u_out, v_out, p_out, _, _, _ = self.forward(x_test, y_test)
+        u_out, v_out, p_out, _, _, _ = self.function(x_test, y_test)
+
+        # x_np = x_test.detach().numpy()
+        # y_np = y_test.detach().numpy()
+        # u_out_np = u_out.detach().numpy()
+        # v_out_np = v_out.detach().numpy()
 
         sns.set(style="whitegrid")  # Set background style
         plt.figure()
@@ -196,77 +144,92 @@ class NavierStokes:
         plt.show()
 
 
-def main():
-    # Create and train the model
-    N_train = 5000
-
-    # Data.npy
-    file_path = "Data.npy"
-    data_array = np.load(file_path, allow_pickle=True)
-    pressure = data_array.tolist()["pressure"]
-    u_velocity = data_array.tolist()["u_velocity"]
-    v_velocity = data_array.tolist()["v_velocity"]
-    x = data_array.tolist()["x"]
-    y = data_array.tolist()["y"]
-    P_star = pressure  # N x N
+N_train = 5000
 
 
-    N = x.shape[0]
 
-    x_test = x[:, 0:1]
-    y_test = y[:, 0:1]
-    x_test = x_test.reshape(-1, 1)
-    y_test = y_test.reshape(-1, 1)
+###### Data.npy
+file_path = 'Data.npy'
+data_array = np.load(file_path, allow_pickle=True)
+pressure = data_array.tolist()['pressure']
+u_velocity = data_array.tolist()['u_velocity']
+v_velocity = data_array.tolist()['v_velocity']
+x = data_array.tolist()['x']
+y = data_array.tolist()['y']
+P_star = pressure  # N x T
+######
 
-    p_test = pressure[:, 0]
-    u_test = u_velocity[:, 0]
-    # t_test = np.ones((x_test.shape[0], x_test.shape[1]))
 
-    # Rearrange Data
-    XX = x  # N x N
-    YY = y  # N x N
 
-    UU = u_velocity  # N x N
-    VV = v_velocity  # N x N
-    PP = pressure  # N x N
+N = x.shape[0]
+T = 20
 
-    x = XX.flatten()[:, None]  # NN x 1
-    y = YY.flatten()[:, None]  # NN x 1
-    # t = TT.flatten()[:, None]  # NN x 1
 
-    u = UU.flatten()[:, None]  # NN x 1
-    v = VV.flatten()[:, None]  # NN x 1
-    p = PP.flatten()[:, None]  # NN x 1
+x_test = x[:, 0:1]
+y_test = y[:, 0:1]
+x_test = x_test.reshape(-1, 1)
+y_test = y_test.reshape(-1, 1)
 
-    # Training Data
-    idx = np.random.choice(10, 100, replace=True)
-    x_train = x[idx, :]
-    y_train = y[idx, :]
-    u_train = u[idx, :]
-    v_train = v[idx, :]
+p_test = pressure[:,0]
+u_test = u_velocity[:,0]
+# t_test = np.ones((x_test.shape[0], x_test.shape[1]))
 
-    pinn = NavierStokes(x_train, y_train, u_train, v_train)
-    pinn.train()
-    torch.save(pinn.net.state_dict(), "model.pt")
+# Rearrange Data
+XX = x  # N x T
+YY = y  # N x T
+# TT = np.tile(t_test[0:20], (1, N)).T  # N x T
 
-    # pinn.net.load_state_dict(torch.load('model.pt'))
-    pinn.net.eval()
+UU = u_velocity  # N x N
+VV = v_velocity  # N x N
+PP = pressure  # N x N
 
-    x_test = torch.tensor(x_test, dtype=torch.float32, requires_grad=True)
-    y_test = torch.tensor(y_test, dtype=torch.float32, requires_grad=True)
+x = XX.flatten()[:, None]  # NN x 1
+y = YY.flatten()[:, None]  # NN x 1
+# t = TT.flatten()[:, None]  # NN x 1
 
-    # x_train = torch.tensor(x_train, dtype=torch.float32, requires_grad=True)
-    # y_train = torch.tensor(y_train, dtype=torch.float32, requires_grad=True)
+u = UU.flatten()[:, None]  # NT x 1
+v = VV.flatten()[:, None]  # NT x 1
+p = PP.flatten()[:, None]  # NT x 1
 
-    pinn.train(num_epochs=100)
+# Training Data
+idx = np.random.choice(10, 100, replace=True)
+x_train = x[idx, :]
+y_train = y[idx, :]
+u_train = u[idx, :]
+v_train = v[idx, :]
+'''
+pinn = NavierStokes(x_train, y_train, t_train, u_train, v_train)
 
-    # Save the trained model
-    torch.save(pinn.net.state_dict(), "model.pt")
-    pinn.net.eval()
+pinn.train()
 
-    # Plot results
-    pinn.plot_results(x_test, y_test, x, y, u_velocity, v_velocity, pressure)
+torch.save(pinn.net.state_dict(), 'model.pt')
+'''
+
+pinn = NavierStokes(x_train, y_train, u_train, v_train)
+pinn.train()
+torch.save(pinn.net.state_dict(), 'model.pt')
+
+# pinn.net.load_state_dict(torch.load('model.pt'))
+pinn.net.eval()
+
+x_test = torch.tensor(x_test, dtype=torch.float32, requires_grad=True)
+y_test = torch.tensor(y_test, dtype=torch.float32, requires_grad=True)
+
+x_train = torch.tensor(x_train, dtype=torch.float32, requires_grad=True)
+y_train = torch.tensor(y_train, dtype=torch.float32, requires_grad=True)
+
+
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # Create and train the model
+    pinn = NavierStokes(x_train, y_train, u_train, v_train)
+    pinn.train(num_epochs=100)
+
+    # Save the trained model
+    torch.save(pinn.net.state_dict(), 'model.pt')
+    pinn.net.eval()
+
+    # Plot results
+    pinn.plot_results(x_test, y_test, x, y, u_velocity, v_velocity)
+
