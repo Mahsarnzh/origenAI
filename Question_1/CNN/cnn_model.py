@@ -2,7 +2,7 @@ import numpy as np
 from tensorflow.keras import layers, models
 
 
-from data_loading import load_data
+from data_loblackading import load_datapython
 
 data, target_data = load_data()
 
@@ -47,17 +47,21 @@ print("Number of samples in y:", y.shape[0])
 
 # Define the 3D CNN model
 model = models.Sequential()
-model.add(layers.Conv3D(32, (3, 3, 3), activation='relu', input_shape=input_shape, padding='same'))
+model.add(
+    layers.Conv3D(
+        32, (3, 3, 3), activation="relu", input_shape=input_shape, padding="same"
+    )
+)
 model.add(layers.MaxPooling3D((2, 2, 2)))
-model.add(layers.Conv3D(64, (3, 3, 3), activation='tanh', padding='same'))
+model.add(layers.Conv3D(64, (3, 3, 3), activation="tanh", padding="same"))
 model.add(layers.MaxPooling3D((2, 2, 2)))
-model.add(layers.Conv3D(128, (3, 3, 3), activation='relu', padding='same'))
+model.add(layers.Conv3D(128, (3, 3, 3), activation="relu", padding="same"))
 model.add(layers.Flatten())
-model.add(layers.Dense(300 * 7, activation='linear'))
+model.add(layers.Dense(300 * 7, activation="linear"))
 model.add(layers.Reshape((300, 7)))
 
 # Compile the model
-model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
+model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mae"])
 
 # Specify the indices for training, testing, and validation
 train_indices = range(0, 450)

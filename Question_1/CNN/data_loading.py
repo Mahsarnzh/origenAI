@@ -1,9 +1,21 @@
 import os
 import numpy as np
 
+
 def load_data():
     directory = "./origen_interview_data/"
-    input_names = {"DEPTH", "TRANY", "PORV", "TRANX", "PERMZ", "TRANZ", "PORO", "SATNUM", "PERMY", "PERMX"}
+    input_names = {
+        "DEPTH",
+        "TRANY",
+        "PORV",
+        "TRANX",
+        "PERMZ",
+        "TRANZ",
+        "PORO",
+        "SATNUM",
+        "PERMY",
+        "PERMX",
+    }
     data = {}
     target_data = {}
     target_names = {"WOPR"}  # Specify your target names here
@@ -37,6 +49,8 @@ def load_data():
                 assert len(file_parts) == 2, "unexpected filename pattern: %s" % file
                 dataset_name = file_parts[0]
                 realpath = os.path.realpath(os.path.join(root, file))
-                target_data[input_name, dataset_name] = np_load(input_name, file, realpath)
+                target_data[input_name, dataset_name] = np_load(
+                    input_name, file, realpath
+                )
 
     return data, target_data

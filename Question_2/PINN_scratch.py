@@ -197,13 +197,7 @@ x_train = x[idx, :]
 y_train = y[idx, :]
 u_train = u[idx, :]
 v_train = v[idx, :]
-'''
-pinn = NavierStokes(x_train, y_train, t_train, u_train, v_train)
 
-pinn.train()
-
-torch.save(pinn.net.state_dict(), 'model.pt')
-'''
 
 pinn = NavierStokes(x_train, y_train, u_train, v_train)
 pinn.train()

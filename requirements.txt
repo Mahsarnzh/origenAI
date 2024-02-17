@@ -113,3 +113,8 @@ pytz==2024.1
 PyYAML==6.0.1
 pyzmq==25.1.2
 qtconsole==5.5.
+numpy
+tensorflow==2.15.0
+seaborn
+tqdm
+torch

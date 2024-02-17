@@ -15,16 +15,16 @@ def get_model(params):
     model = tf.keras.models.Sequential()
     model.add(GaussianNoise(gaussian_std, input_shape=input_shape))
 
-    model.add(LSTM(lstm1_units, activation='relu', return_sequences=True))
+    model.add(LSTM(lstm1_units, activation="relu", return_sequences=True))
     model.add(Dropout(dropout_rate))
 
-    model.add(LSTM(lstm2_units, activation='relu', return_sequences=True))
+    model.add(LSTM(lstm2_units, activation="relu", return_sequences=True))
     model.add(Dropout(dropout_rate))
     model.add(Flatten())
 
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256, activation="relu"))
     # model.add(Dense(2100, activation='linear'))
-    model.add(Dense(600, activation='linear'))
+    model.add(Dense(600, activation="linear"))
 
     model.compile(optimizer=optimizer, loss=loss)
 

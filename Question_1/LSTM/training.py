@@ -15,14 +15,19 @@ import numpy as np
 FLAGS = flags.FLAGS
 
 # Mark the flags as parsed to prevent duplicate definition error
-flags.DEFINE_string('TARGET_WELL', default='default_value', help='Description of TARGET_WELL')
-flags.DEFINE_integer('EPOCHS', default=300, help='Number of training epochs')
-flags.DEFINE_integer('BATCH_SIZE', default=32, help='Batch size for training')
-flags.DEFINE_integer('OBSERVATION_DATE', default=10, help='Observation date')
-flags.DEFINE_float('INFERENCE_GAUSSIAN_STD', default=0.1, help='Standard deviation for Gaussian noise during inference')
+flags.DEFINE_string(
+    "TARGET_WELL", default="default_value", help="Description of TARGET_WELL"
+)
+flags.DEFINE_integer("EPOCHS", default=300, help="Number of training epochs")
+flags.DEFINE_integer("BATCH_SIZE", default=32, help="Batch size for training")
+flags.DEFINE_integer("OBSERVATION_DATE", default=10, help="Observation date")
+flags.DEFINE_float(
+    "INFERENCE_GAUSSIAN_STD",
+    default=0.1,
+    help="Standard deviation for Gaussian noise during inference",
+)
 
 FLAGS.mark_as_parsed()
-
 
 
 df_t, target_df_t = load_and_process_data()
@@ -30,6 +35,7 @@ df_t, target_df_t = load_and_process_data()
 
 def _get_log_path():
     return pjoin("logs", f"well_{FLAGS.TARGET_WELL}")
+
 
 def _get_result_path():
     return pjoin("result", f"well_{FLAGS.TARGET_WELL}")
@@ -68,11 +74,15 @@ def train_model():
     print("train_y shape:", train_y.shape)
 
     train_data = torch.utils.data.TensorDataset(train_x, train_y)
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=FLAGS.BATCH_SIZE, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(
+        train_data, batch_size=FLAGS.BATCH_SIZE, shuffle=True
+    )
 
     val_data = torch.utils.data.TensorDataset(val_x, val_y)
 
-    val_loader = torch.utils.data.DataLoader(val_data, batch_size=FLAGS.BATCH_SIZE, shuffle=False)
+    val_loader = torch.utils.data.DataLoader(
+        val_data, batch_size=FLAGS.BATCH_SIZE, shuffle=False
+    )
 
     # Convert PyTorch tensors to NumPy arrays
     train_x_numpy = train_x.numpy()
@@ -80,26 +90,34 @@ def train_model():
     val_x_numpy = val_x.numpy()
     val_y_numpy = val_y.numpy()
 
-    lstm_model = get_model(params={
-        "input_shape": (train_x_numpy.shape[1], 1),  # Assuming each feature corresponds to a time step
-        "lstm1_units": 50,
-        "lstm2_units": 50,
-        "gaussian_std": 0.1,
-        "dropout_rate": 0.2,
-        "optimizer": "adam",
-        "loss": "mean_squared_error"
-    })
+    lstm_model = get_model(
+        params={
+            "input_shape": (
+                train_x_numpy.shape[1],
+                1,
+            ),  # Assuming each feature corresponds to a time step
+            "lstm1_units": 50,
+            "lstm2_units": 50,
+            "gaussian_std": 0.1,
+            "dropout_rate": 0.2,
+            "optimizer": "adam",
+            "loss": "mean_squared_error",
+        }
+    )
 
     latest = tf.train.latest_checkpoint(_get_log_path())
     print(f"latest checkpoint: {latest}")
 
-    es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=6, verbose=1)
+    es = tf.keras.callbacks.EarlyStopping(
+        monitor="val_loss", mode="min", patience=6, verbose=1
+    )
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    logdir = pjoin(_get_log_path(), 'scalars')
+    logdir = pjoin(_get_log_path(), "scalars")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
     checkpoint_path = pjoin(_get_log_path(), "model.ckpt-{epoch:04d}")
-    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path, save_weights_only=True,
-                                                             verbose=1)
+    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_path, save_weights_only=True, verbose=1
+    )
 
     print("Training LSTM model using PyTorch DataLoader")
     for epoch in range(FLAGS.EPOCHS):
@@ -107,7 +125,7 @@ def train_model():
             # Convert PyTorch tensors to NumPy arrays for each batch
             batch_x_numpy = batch_x.numpy()
             batch_y_numpy = batch_y.numpy()
-            print(f'epoch:{epoch}')
+            print(f"epoch:{epoch}")
             # Train the model on the current batch
             history = lstm_model.train_on_batch(batch_x_numpy, batch_y_numpy)
             # print(f'history:{history}')
@@ -131,17 +149,18 @@ def train_model():
         val_y = tf.concat(val_y_list, axis=0)
 
         early_stopping = EarlyStopping(
-            monitor='loss',  # Change 'val_loss' to 'loss'
+            monitor="loss",  # Change 'val_loss' to 'loss'
             restore_best_weights=True,
         )
 
         # Assuming val_loader is defined, use it for validation
         history = lstm_model.fit(
-            val_x, val_y,
+            val_x,
+            val_y,
             epochs=40,  # You may adjust the number of epochs for validation
             use_multiprocessing=True,
             workers=8,
-            callbacks=[es, tensorboard_callback, early_stopping]
+            callbacks=[es, tensorboard_callback, early_stopping],
         )
 
         print("Validation has been ended")
@@ -151,7 +170,7 @@ def train_model():
         observed = test_y[:obs]
         y_hat_list.extend(observed)
 
-        buffer = test_x[obs:obs + 1]
+        buffer = test_x[obs : obs + 1]
         mu = gaussian_std
 
         for i in range(obs + 1, 12):
@@ -162,7 +181,7 @@ def train_model():
             y_hat_list.append(predicted_val)
 
             buffer = np.delete(buffer, 0, 1)
-            next_wbhp = test_x[i:i + 1][0, 4]
+            next_wbhp = test_x[i : i + 1][0, 4]
             predicted_array = np.array([[predicted_val, next_wbhp]])
 
             buffer = buffer.reshape(-1, 1)
@@ -170,24 +189,25 @@ def train_model():
             buffer = np.vstack((buffer, predicted_array.T))
             # buffer = np.reshape(buffer, (1, 5, 2))
 
-            mean_wopr = np.mean(buffer, axis = 0)
-            mean_wbhp = np.mean(buffer, axis =1)
+            mean_wopr = np.mean(buffer, axis=0)
+            mean_wbhp = np.mean(buffer, axis=1)
 
             # Assuming buffer[0] and buffer[1] are 1D arrays representing sequences
             wopr_predicted_noise_added = np.random.normal(mean_wopr, mu, len(buffer[0]))
-            wbhp_predicted_noise_added = np.random.normal(np.mean(mean_wbhp), mu, len(buffer[1]))
+            wbhp_predicted_noise_added = np.random.normal(
+                np.mean(mean_wbhp), mu, len(buffer[1])
+            )
             buffer[0] = wopr_predicted_noise_added
             buffer[1] = wbhp_predicted_noise_added
 
         return y_hat_list
+
     ## Inference
     y_hat_list = cascade_inference(
         lstm_model,
         test_x.numpy(),
         test_y.numpy(),
         obs=FLAGS.OBSERVATION_DATE,
-        gaussian_std=FLAGS.INFERENCE_GAUSSIAN_STD
+        gaussian_std=FLAGS.INFERENCE_GAUSSIAN_STD,
     )
     print("Saving inference results...")
-
-
