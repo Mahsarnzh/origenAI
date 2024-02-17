@@ -26,7 +26,7 @@ Clone the repository:
 ### Navigate to the project directory
 
   ```
-  cd your-project
+  cd origenAI
   ```
 
 ### Create a virtual environment:
