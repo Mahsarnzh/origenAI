@@ -5,10 +5,16 @@ from tensorflow.keras import layers, models
 from data_loading import load_data
 
 
+target_name = "WOPR"
+
+
 # noinspection PyPep8Naming
 def main():
+    # Create 500 samples of input variables with shape (10, 15, 25, 24)
+    num_inputs = 500
+    input_shape = (10, 15, 25, 24)
 
-    data, target_data = load_data()
+    data, target_data, BHP_data = load_data()
 
     X = []
     y = []
@@ -19,23 +25,10 @@ def main():
     for key, value in target_data.items():
         y.append(value)
 
-    # Create 500 samples of target variables with shape (300, 7)
-    num_targets = 500
-    target_shape = (300, 7)
-    # target_keys = ["target_" + str(i) for i in range(num_targets)]  # Creating column names
-    # target_data = {key: np.random.rand(*target_shape) for key in target_keys}
-
     target_data = np.array(
         [
-            target_data[in_nm, sim_nm]
-            for in_nm, sim_nm in sorted(
-                [
-                    (in_nm, sim)
-                    for in_nm, sim in target_data.keys()
-                    # if nm == "WOPR"
-                ],
-                key=lambda s: int(s[1].split("_")[0][3:]),
-            )  # then sort by simulation number
+            target_data[target_name, "sim%d_%s" % (i+1, target_name.lower())]
+            for i in range(num_inputs)
         ]
     )
     assert target_data.shape == (
@@ -43,10 +36,6 @@ def main():
         300,
         7,
     ), "malformed target data of shape %s" % str(target_data.shape)
-
-    # Create 500 samples of input variables with shape (10, 15, 25, 24)
-    num_inputs = 500
-    input_shape = (10, 15, 25, 24)
 
     in_nms = sorted(set(k[0] for k in data.keys()))
     input_data = np.array(
@@ -96,7 +85,7 @@ def main():
     model.add(layers.Reshape((300, 7)))
 
     # Compile the model
-    model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mae"])
+    model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mae", "mse"])
 
     # Specify the indices for training, testing, and validation
     train_indices = range(0, 450)

@@ -18,8 +18,9 @@ def load_data():
     }
     data = {}
     target_data = {}
+    BHP_data = {}
     target_names = {"WOPR"}  # Specify your target names here
-
+    bhp = {"BHP"}
     def np_load(input_nm, file_nm, rp):
         try:
             d = np.load(rp, allow_pickle=True)
@@ -52,6 +53,19 @@ def load_data():
                 target_data[input_name, dataset_name] = np_load(
                     input_name, file, realpath
                 )
+
+        if input_name in bhp:
+            for file in filter(".DS_Store".__ne__, files):
+                file_parts = file.split(".")
+                assert len(file_parts) == 2, "unexpected filename pattern: %s" % file
+                dataset_name = file_parts[0]
+                realpath = os.path.realpath(os.path.join(root, file))
+                BHP_data[input_name, dataset_name] = np_load(
+                    input_name, file, realpath
+                )
+
     assert len(data) > 0, "failed to load data"
     assert len(target_data) > 0, "failed to load data and target data"
-    return data, target_data
+
+
+    return data, target_data, BHP_data
