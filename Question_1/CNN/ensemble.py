@@ -136,7 +136,8 @@ def main():
         X_train_reshaped = X_train.reshape((X_train.shape[0], 10, 9000))
         model.fit(X_train_reshaped, y_train, epochs=2, batch_size=32)
 
-
+    lstm_predictions = np.concatenate([model.predict(X.reshape((X.shape[0], 10, 9000))) for model in lstm_models],
+                                      axis=1)
     num_models = 1
     cnn_models = [create_cnn_model(input_shape=input_shape) for _ in range(num_models)]
 
@@ -148,13 +149,11 @@ def main():
         model.fit(X_train, y_train, epochs=2, batch_size=32)
 
 
-
-
     # Create an ensemble of traditional ML models
     base_models = [
-        ('rf', RandomForestRegressor(n_estimators=50, random_state=42)),
-        ('gb', GradientBoostingRegressor(n_estimators=50, random_state=42)),
-        ('mlp', MLPRegressor(hidden_layer_sizes=(50,), max_iter=500, random_state=42))
+        # ('rf', RandomForestRegressor(n_estimators=50, random_state=42)),
+        # ('gb', GradientBoostingRegressor(n_estimators=50, random_state=42)),
+        ('mlp', MLPRegressor(hidden_layer_sizes=(50,), max_iter=500, random_state=42, solver='adam', tol=1e-4))
     ]
 
     # Train each traditional ML model on different subsets of the data
@@ -163,30 +162,43 @@ def main():
         print(f"Training Model {i + 1}...")
         indices = np.random.choice(range(X.shape[0]), size=int(X.shape[0] * 0.8), replace=False)
         X_train, y_train = X[indices], y[indices]
-        model.fit(X_train.reshape((X_train.shape[0], -1)), y_train.reshape((y_train.shape[0], -1)))
-
-
+        if len(X_train.shape) > 2:
+            # Flatten input data for MLP
+            X_train_flattened = X_train.reshape((X_train.shape[0], -1))
+        else:
+            X_train_flattened = X_train
+        model.fit(X_train_flattened, y_train.reshape((y_train.shape[0], -1)))
     # Create a StackingRegressor with a Linear Regression meta-model
     stacked_model = StackingRegressor(estimators=base_models, final_estimator=LinearRegression())
 
-    # Train the StackingRegressor on the predictions of the base models
-    stacked_model.fit(np.concatenate([model.predict(X) for model in cnn_models + ml_models], axis=1), y)
+    # Train the StackingRegressor on the predictions of the base models  lstm_models
+
+    #######3
+    # Predictions from LSTM models
+    lstm_predictions = np.concatenate([model.predict(X.reshape((X.shape[0], 10, 9000))) for model in lstm_models],
+                                      axis=1)
+    # Predictions from CNN models
+    cnn_predictions = np.concatenate([model.predict(X) for model in cnn_models], axis=1)
+    # Predictions from MLP models
+    mlp_predictions = np.concatenate([model.predict(X.reshape((X.shape[0], -1))) for model in ml_models], axis=1)
+
+    # Combine all predictions for input to the StackingRegressor
+    stacked_inputs = np.concatenate([lstm_predictions, cnn_predictions, mlp_predictions.reshape(500,300, 7)], axis=1)
+    print('Problemmmmm')
+    y_reshaped = y.reshape(-1, 1)
+    shape_y = y_reshaped.shape[0]
+    num_modles = len([lstm_predictions, cnn_predictions, mlp_predictions.reshape(500,300, 7)])
+    reshaped_stacked_inputs = stacked_inputs.reshape(shape_y, num_modles)
+    # Train the StackingRegressor on the combined predictions
+    stacked_model.fit(reshaped_stacked_inputs, y_reshaped)
 
     # Make predictions with the StackingRegressor
-    stacked_predictions = stacked_model.predict(np.concatenate([model.predict(X) for model in cnn_models + ml_models], axis=1))
+    stacked_predictions = stacked_model.predict(reshaped_stacked_inputs)
+    mse = mean_squared_error(y_reshaped, stacked_predictions)
+    print(f"Mean Squared Error: {mse}")
 
-
-
-
-
-
-
-
-
-
-
-
-
+    rmse = np.sqrt(mse)
+    print(f"Root Mean Squared Error: {rmse}")
 
 
 if __name__ == "__main__":
