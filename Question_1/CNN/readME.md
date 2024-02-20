@@ -1,5 +1,30 @@
-# Deep Learning for predicitng well oil production rate (WOPR) 
+# Oil Production Rate Prediction Ensemble Framework
 
-I decided to use CNN at first based on 3D nature of the dataset and it has a very simple structure and the error rates indicate that the model is not performing well.
-In the next step i was curious if LSTM can capture the pattern of ht flatten data and even though the model is sophisticated, it was not able to perform nearly as good as CNN network.
- Since not of the networks were able to capture the patterns well enough I decided to apply stacking ensemble learning and use both CNN and LSTM and three other ML models. If I had enough time, I would try GANs were I use CNN as actror and LSTM as critic and create a competition between them for lower error rate amounts.
+## Overview
+
+This repository explores advanced techniques for predicting Well Oil Production Rates (WOPR) using a combination of Convolutional Neural Network (CNN), Long Short-Term Memory (LSTM), and traditional machine learning models. The ensemble learning approach, which incorporates CNN, LSTM, and three additional ML models, demonstrates superior predictive performance compared to standalone models.
+
+## Custom Model Integration
+
+To enhance the predictive capabilities of our models, a custom architecture was devised. This model integrates two CNN layers to accommodate two distinct inputs:
+
+- `Input1`: 500 x (10, 15, 25, 24)
+- `Input2`: 500 x (300, 7, 1)
+
+The model structure can be summarized as follows:
+
+
+Input1 --> CNNLayer 
+                    \
+                     ---> FCLayer ---> Output
+                    /
+Input2 --> CNNLayer
+
+
+## Training
+
+All models were initially trained without utilizing the Bottom Hole Pressure (BHP) dataset. Subsequently, to gauge the impact of incorporating BHP data, the custom model was developed and trained. The addition of BHP data significantly enhances the learning rate of the models.
+
+## Conclusion
+
+This repository provides a comprehensive exploration of various models and their integration through ensemble learning. The custom model's innovative architecture demonstrates the potential for improved predictions by leveraging diverse datasets. Feel free to explore the code and model details in the provided notebooks and scripts.
