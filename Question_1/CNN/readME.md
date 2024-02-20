@@ -15,12 +15,13 @@ The model structure can be summarized as follows:
 
 ![Custom Model Architecture]([https://github.com/Mahsarnzh/origenAI/blob/main/Question_1/CNN/costum_model.png])
 
+```
 Input1 --> CNNLayer 
                     \
                      ---> FCLayer ---> Output
                     /
 Input2 --> CNNLayer
-
+```
 
 
 ## Training
