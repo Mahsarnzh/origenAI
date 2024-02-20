@@ -13,8 +13,6 @@ All the previous models including the ensemble were trained without BHP dataset,
 
 The model structure can be summarized as follows:
 
-![Custom Model Architecture]([https://github.com/Mahsarnzh/origenAI/blob/main/Question_1/CNN/costum_model.png])
-
 ```
 Input1 --> CNNLayer 
                     \
