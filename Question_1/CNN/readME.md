@@ -27,30 +27,5 @@ All models were initially trained without utilizing the Bottom Hole Pressure (BH
 ## Conclusion
 
 This repository provides a comprehensive exploration of various models and their integration through ensemble learning. The custom model's innovative architecture demonstrates the potential for improved predictions by leveraging diverse datasets. Feel free to explore the code and models in the provided notebooks and scripts.
-
-
-
-Model: "Costume Model"
-__________________________________________________________________________________________________
- Layer (type)                Output Shape                 Param #   Connected to                  
-==================================================================================================
- input_cnn1 (InputLayer)     [(None, 300, 7, 1)]          0         []                            
-                                                                                                  
- input_cnn2 (InputLayer)     [(None, 10, 15, 25, 24)]     0         []                            
-                                                                                                  
- conv2d (Conv2D)             (None, 298, 5, 64)           640       ['input_cnn1[0][0]']          
-                                                                                                  
- conv2d_1 (Conv2D)           (None, 10, 13, 23, 64)       13888     ['input_cnn2[0][0]']          
-                                                                                                  
- flatten (Flatten)           (None, 95360)                0         ['conv2d[0][0]']              
-                                                                                                  
- flatten_1 (Flatten)         (None, 191360)               0         ['conv2d_1[0][0]']            
-                                                                                                  
- concatenate (Concatenate)   (None, 286720)               0         ['flatten[0][0]',             
-                                                                     'flatten_1[0][0]']           
-                                                                                                  
- dense (Dense)               (None, 2100)                 6021141   ['concatenate[0][0]']         
-                                                          00                                      
-                                                                                                  
- reshape (Reshape)           (None, 300, 7)               0         ['dense[0][0]']               
+           
                                     
