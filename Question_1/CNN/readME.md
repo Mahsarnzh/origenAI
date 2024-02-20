@@ -20,6 +20,12 @@ Input1 --> CNNLayer
 Input2 --> CNNLayer
 
 
+Input1 --> CNNLayer
+---> FCLayer ---> Output
+/
+Input2 --> CNNLayer
+
+
 ## Training
 
 All models were initially trained without utilizing the Bottom Hole Pressure (BHP) dataset. Subsequently, to gauge the impact of incorporating BHP data, the custom model was developed and trained. The addition of BHP data significantly enhances the learning rate of the models.
