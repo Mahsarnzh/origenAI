@@ -53,20 +53,17 @@ def boundary_top(x, on_boundary):
 
 # xmin – Coordinate of bottom left corner.
 # xmax – Coordinate of top right corner.
-
-spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1])
-
+# Explicitly set orientation to ensure consistent color mapping
+spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1], orientation="xy")
 
 # Define boundary conditions
-bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_left)
-bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_right)
-bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_bottom)
+bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_left)
+bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_right)
+bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_bottom)
 
 # Homogeneous Dirichlet Boundary condition at the top side
-bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0, 0.0], boundary_top)
+bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0], boundary_top)
 
-
-# Modify the boundary_condition_u and boundary_condition_v functions
 boundary_condition_u = dde.DirichletBC(
     spatial_domain,
     lambda x: 1.0 if any(dde.utils.isclose(x[0], 1)) else 0.0,
@@ -74,10 +71,15 @@ boundary_condition_u = dde.DirichletBC(
     component=0,
 )
 
+# Homogeneous Neumann Boundary condition at the left, right, and bottom sides
 boundary_condition_v = dde.DirichletBC(
     spatial_domain,
-    lambda x: 0.0,  # Homogeneous Neumann Boundary Condition
-    lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
+    lambda x: 0.0,
+    lambda x, on_boundary: (
+        on_boundary
+        and not dde.utils.isclose(x[1], 1)
+        and not dde.utils.isclose(x[1], 0)
+    ),
     component=1,
 )
 
@@ -95,15 +97,11 @@ data = dde.data.PDE(
 
 
 # Solve the problem
-
 net = dde.nn.FNN([2] + 8 * [50] + [3], "tanh", "Glorot normal")
 
 model = dde.Model(data, net)
-
-model.compile("adam", lr=1e-3)
-model.train(iterations=30)
 model.compile("L-BFGS")
-losshistory, train_state = model.train()
+losshistory, train_state = model.train(iterations=100)
 
 
 ###### Data.npy
@@ -114,14 +112,13 @@ u_velocity = data_array.tolist()["u_velocity"]
 v_velocity = data_array.tolist()["v_velocity"]
 x = data_array.tolist()["x"]
 y = data_array.tolist()["y"]
-P_star = pressure  # N x T
+P_star = pressure  # N x N
 ######
 
 
 # Rearrange Data
-XX = x  # N x T
-YY = y  # N x T
-# TT = np.tile(t_test[0:20], (1, N)).T  # N x T
+XX = x  # N x N
+YY = y  # N x N
 
 UU = u_velocity  # N x N
 VV = v_velocity  # N x N
@@ -146,18 +143,8 @@ v_exact = v.reshape(-1)
 p_exact = p.reshape(-1)
 
 
-f = model.predict(X, operator=pde)
-
-l2_difference_u = dde.metrics.l2_relative_error(u_exact, u_pred)
-l2_difference_v = dde.metrics.l2_relative_error(v_exact, v_pred)
-l2_difference_p = dde.metrics.l2_relative_error(p_exact, p_pred)
-residual = np.mean(np.absolute(f))
-
-print("Mean residual:", residual)
-
-
 # Plot Contours of Prediction vs Data
-plt.figure(figsize=(15, 5))
+plt.figure(figsize=(5, 5))
 
 # Plot Exact U Component
 plt.subplot(1, 6, 1)
@@ -176,7 +163,7 @@ plt.title("Exact V Component")
 
 # Plot Predicted V Component
 plt.subplot(1, 6, 4)
-plt.tricontourf(x.flatten(), y.flatten(), v_pred, cmap="viridis", levels=20)
+plt.tricontourf(x.flatten(), y.flatten(), -v_pred, cmap="viridis", levels=20)
 plt.title("Predicted V Component")
 
 # Plot Exact Pressure

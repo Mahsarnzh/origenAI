@@ -57,12 +57,12 @@ def boundary_top(x, on_boundary):
 spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1], orientation="xy")
 
 # Define boundary conditions
-bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_left)
-bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_right)
-bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_bottom)
+bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_left)
+bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_right)
+bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_bottom)
 
 # Homogeneous Dirichlet Boundary condition at the top side
-bc_top = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_top)
+bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0], boundary_top)
 
 boundary_condition_u = dde.DirichletBC(
     spatial_domain,
@@ -78,7 +78,6 @@ boundary_condition_v = dde.DirichletBC(
     lambda x, on_boundary: (
         on_boundary
         and not dde.utils.isclose(x[1], 1)
-        and not dde.utils.isclose(x[0], 1)
         and not dde.utils.isclose(x[1], 0)
     ),
     component=1,
@@ -102,7 +101,7 @@ net = dde.nn.FNN([2] + 8 * [50] + [3], "tanh", "Glorot normal")
 
 model = dde.Model(data, net)
 model.compile("L-BFGS")
-losshistory, train_state = model.train(iterations=10)
+losshistory, train_state = model.train(iterations=100)
 
 
 ###### Data.npy
@@ -113,13 +112,13 @@ u_velocity = data_array.tolist()["u_velocity"]
 v_velocity = data_array.tolist()["v_velocity"]
 x = data_array.tolist()["x"]
 y = data_array.tolist()["y"]
-P_star = pressure  # N x T
+P_star = pressure  # N x N
 ######
 
 
 # Rearrange Data
-XX = x  # N x T
-YY = y  # N x T
+XX = x  # N x N
+YY = y  # N x N
 
 UU = u_velocity  # N x N
 VV = v_velocity  # N x N
@@ -145,7 +144,7 @@ p_exact = p.reshape(-1)
 
 
 # Plot Contours of Prediction vs Data
-plt.figure(figsize=(15, 5))
+plt.figure(figsize=(5, 5))
 
 # Plot Exact U Component
 plt.subplot(1, 6, 1)
@@ -164,7 +163,7 @@ plt.title("Exact V Component")
 
 # Plot Predicted V Component
 plt.subplot(1, 6, 4)
-plt.tricontourf(x.flatten(), y.flatten(), v_pred, cmap="viridis", levels=20)
+plt.tricontourf(x.flatten(), y.flatten(), -v_pred, cmap="viridis", levels=20)
 plt.title("Predicted V Component")
 
 # Plot Exact Pressure
