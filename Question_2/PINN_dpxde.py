@@ -1,5 +1,5 @@
 """Backend supported: tensorflow.compat.v1, tensorflow, pytorch, paddle"""
-
+import matplotlib.pyplot as plt
 import deepxde as dde
 import numpy as np
 
@@ -56,43 +56,40 @@ def boundary_top(x, on_boundary):
 
 spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1])
 
+
 # Define boundary conditions
-bc_left = dde.icbc.NeumannBC(spatial_domain, lambda x: 0.0, boundary_left)
-bc_right = dde.icbc.NeumannBC(spatial_domain, lambda x: 0.0, boundary_right)
-bc_bottom = dde.icbc.NeumannBC(spatial_domain, lambda x: 0.0, boundary_bottom)
-# boundary_condition_u = dde.icbc.DirichletBC(
-#     spatial_domain, lambda x: 1, on_boundary: on_boundary, component=0
-# )
+bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_left)
+bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_right)
+bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_bottom)
 
-# boundary_condition_u = dde.icbc.DirichletBC(
-#     spatial_domain, lambda x: 1.0, lambda _, on_boundary: on_boundary, component=0
-# )
-#
+# Homogeneous Dirichlet Boundary condition at the top side
+bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0, 0.0], boundary_top)
 
-boundary_condition_u = dde.icbc.DirichletBC(
+# Modify the boundary_condition_u and boundary_condition_v functions
+boundary_condition_u = dde.DirichletBC(
     spatial_domain,
-    lambda x: 1.0 if any(dde.utils.isclose(x[0], 0)) else 1.0,
-    lambda _, on_boundary: on_boundary,
+    lambda x: 1.0 if any(dde.utils.isclose(x[0], 1)) else 0.0,
+    lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
     component=0,
 )
 
-
-boundary_condition_v = dde.icbc.DirichletBC(
+boundary_condition_v = dde.DirichletBC(
     spatial_domain,
-    lambda x: 0.0 if any(dde.utils.isclose(x[1], 0)) else 0.0,
-    lambda _, on_boundary: on_boundary,
+    lambda x: 1.0 if any(dde.utils.isclose(x[1], 0)) else 0.0,
+    lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
     component=1,
 )
-
 
 data = dde.data.PDE(
     spatial_domain,
     pde,
-    [bc_left, bc_right, bc_bottom, boundary_condition_u, boundary_condition_v],
+    [bc_left, bc_right, bc_bottom, bc_top, boundary_condition_u, boundary_condition_v],
     num_domain=500,  # Adjust the number of points in the domain as needed
     num_boundary=400,
     num_test=1024,
 )
+
+
 
 # Solve the problem
 
@@ -101,7 +98,7 @@ net = dde.nn.FNN([2] + 8 * [50] + [3], "tanh", "Glorot normal")
 model = dde.Model(data, net)
 
 model.compile("adam", lr=1e-3)
-model.train(iterations=30000)
+model.train(iterations=30)
 model.compile("L-BFGS")
 losshistory, train_state = model.train()
 
@@ -154,3 +151,50 @@ l2_difference_p = dde.metrics.l2_relative_error(p_exact, p_pred)
 residual = np.mean(np.absolute(f))
 
 print("Mean residual:", residual)
+
+
+# Plot Contours of Prediction vs Data
+plt.figure(figsize=(15, 5))
+
+# Plot Exact U Component
+plt.subplot(1, 6, 1)
+plt.tricontourf(x.flatten(), y.flatten(), u_exact, cmap="viridis", levels=20)
+plt.title("Exact U Component")
+
+# Plot Predicted U Component
+plt.subplot(1, 6, 2)
+plt.tricontourf(x.flatten(), y.flatten(), u_pred, cmap="viridis", levels=20)
+plt.title("Predicted U Component")
+
+# Plot Exact V Component
+plt.subplot(1, 6, 3)
+plt.tricontourf(x.flatten(), y.flatten(), v_exact, cmap="viridis", levels=20)
+plt.title("Exact V Component")
+
+# Plot Predicted V Component
+plt.subplot(1, 6, 4)
+plt.tricontourf(x.flatten(), y.flatten(), v_pred, cmap="viridis", levels=20)
+plt.title("Predicted V Component")
+
+# Plot Exact Pressure
+plt.subplot(1, 6, 5)
+plt.tricontourf(x.flatten(), y.flatten(), p_exact, cmap="viridis", levels=20)
+plt.title("Exact Pressure")
+
+# Plot Predicted Pressure
+plt.subplot(1, 6, 6)
+plt.tricontourf(x.flatten(), y.flatten(), p_pred, cmap="viridis", levels=20)
+plt.title("Predicted Pressure")
+
+plt.show()
+
+
+plt.figure(figsize=(10, 5))
+plt.plot(losshistory.steps, losshistory.loss_train, label='Train Loss')
+plt.plot(losshistory.steps, losshistory.loss_test, label='Test Loss')
+plt.title("Loss History")
+plt.xlabel("Iteration")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid(True)
+plt.show()

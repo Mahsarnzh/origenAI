@@ -26,6 +26,7 @@ class NavierStokes:
             torch.tensor(Y, dtype=torch.float32).clone().detach().requires_grad_(True)
         )
 
+        self.loss_history = []
         self.u = torch.tensor(u, dtype=torch.float32)
         self.v = torch.tensor(v, dtype=torch.float32)
 
@@ -162,6 +163,7 @@ class NavierStokes:
         self.iter += 1
         if not self.iter % 1:
             print("Iteration: {:}, Loss: {:0.6f}".format(self.iter, self.ls))
+            self.loss_history.append(self.ls.item())
 
         return self.ls
 
@@ -178,22 +180,34 @@ class NavierStokes:
 
         u_out, v_out, p_out, _, _, _ = self.function(x_test, y_test)
 
-        sns.set(style="whitegrid")  # Set background style
-        plt.figure()
-        sns.heatmap(pressure, cmap="viridis", cbar=True)
-        plt.quiver(x, y, u_velocity, v_velocity, color="red", scale=20)
-        plt.xlim((0, 1))
-        plt.ylim((0, 1))
-        plt.show()
-
-        # Plot pressure using heatmap
+        # Figure 1: Heatmap of Pressure
         plt.figure(figsize=(8, 6))
         p_out_np = p_out.detach().numpy()
         sns.heatmap(p_out_np, cmap="viridis", cbar=True)
         plt.xlabel("X-axis")
         plt.ylabel("Y-axis")
         plt.title("Pressure Field")
+        plt.show()
 
+        # Figure 2: Quiver plot of Velocity Field
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(pressure, cmap="viridis", cbar=True)
+        plt.quiver(x, y, u_velocity, v_velocity, color="red", scale=20)
+        plt.xlim((0, 1))
+        plt.ylim((0, 1))
+        plt.xlabel("X-axis")
+        plt.ylabel("Y-axis")
+        plt.title("Velocity Field")
+        plt.show()
+
+        # Figure 3: Another representation of Velocity Field
+        plt.figure(figsize=(8, 6))
+        plt.quiver(x, y, u_velocity, v_velocity, color="blue", scale=20)
+        plt.xlim((0, 1))
+        plt.ylim((0, 1))
+        plt.xlabel("X-axis")
+        plt.ylabel("Y-axis")
+        plt.title("Velocity Field (Quiver Plot)")
         plt.show()
 
 
@@ -239,18 +253,30 @@ def main():
     x_test = torch.tensor(x_test, dtype=torch.float32, requires_grad=True)
     y_test = torch.tensor(y_test, dtype=torch.float32, requires_grad=True)
 
-    x_train = torch.tensor(x_train, dtype=torch.float32, requires_grad=True)
-    y_train = torch.tensor(y_train, dtype=torch.float32, requires_grad=True)
-
     # Create and train the model
-    pinn = NavierStokes(x_train, y_train, u_train, v_train)
     pinn.train(num_epochs=100)
 
     # Save the trained model
-    torch.save(pinn.net.state_dict(), "model.pt")
+    # torch.save(pinn.net.state_dict(), "model.pt")
 
     # Plot results
     pinn.plot_results(x_test, y_test, x, y, u_velocity, v_velocity, pressure)
+    plt.figure()
+    plt.plot(pinn.loss_history, label="Loss")
+    plt.xlabel("Iteration")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.title("Training Loss History")
+    plt.show()
+
+    u_out, v_out, p_out, _, _, _  = pinn.function(x_test, y_test)
+
+    # Plot pressure using heatmap
+    p_out_np = p_out.detach().numpy()
+    # v_out_np = v_out.detach().numpy()
+    u_out_np = u_out.detach().numpy()
+
+
 
 
 if __name__ == "__main__":

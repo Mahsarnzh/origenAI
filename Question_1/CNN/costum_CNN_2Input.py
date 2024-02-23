@@ -3,6 +3,7 @@ from tensorflow.keras.optimizers import Adam
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, Flatten, Dense, Reshape, concatenate
+import matplotlib.pyplot as plt
 
 input_shape_cnn = (300, 7, 1)
 input_shape_fc = (10, 15, 25, 24)
@@ -138,11 +139,40 @@ X_train_fc_split, X_test_fc_split, X_val_fc_split = X_train_fc[train_indices], X
 y_train_split, y_test_split, y_val_split = y[train_indices], y[test_indices], y[val_indices]
 
 # Train the model
-model.fit(x={'input_cnn1': X_train_fc_split, 'input_cnn2': X_train_cnn_normalized[train_indices]}, y=y_scaled[train_indices],
-          epochs=20, batch_size=32, validation_data=({'input_cnn1': X_val_fc_split, 'input_cnn2': X_train_cnn_normalized[val_indices]}, y_scaled[val_indices]))
+# model.fit(x={'input_cnn1': X_train_fc_split, 'input_cnn2': X_train_cnn_normalized[train_indices]}, y=y_scaled[train_indices],
+#           epochs=12, batch_size=32, validation_data=({'input_cnn1': X_val_fc_split, 'input_cnn2': X_train_cnn_normalized[val_indices]}, y_scaled[val_indices]))
 
-# Train the model
-# model.fit(x={'input_cnn1': X_train_fc, 'input_cnn2': X_train_cnn_normalized}, y=y_scaled, epochs=20, batch_size=32, validation_split=0.2)
+history = model.fit(x={'input_cnn1': X_train_fc_split, 'input_cnn2': X_train_cnn_normalized[train_indices]}, y=y_scaled[train_indices],
+                    epochs=12, batch_size=32, validation_data=({'input_cnn1': X_val_fc_split, 'input_cnn2': X_train_cnn_normalized[val_indices]}, y_scaled[val_indices]))
 
 
-model.save('costume_model_2inputs.h5')
+y_pred_scaled = model.predict({'input_cnn1': X_test_fc_split, 'input_cnn2': X_train_cnn_normalized[test_indices]})
+
+# Inverse transform the scaled predictions to get unnormalized results
+y_pred_unscaled = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).reshape(y_pred_scaled.shape)
+
+# Save the unnormalized predictions to a numpy vector
+np.save('results_test.npy', y_pred_unscaled)
+
+# Save training loss to a numpy vector
+np.save('loss_training.npy', history.history['loss'])
+
+# Save validation loss to a numpy vector
+np.save('loss_testing.npy', history.history['val_loss'])
+
+# Print the shape of the saved results
+print(f"Shape of saved results: {y_pred_unscaled.shape}")
+
+
+# Plot the training loss
+plt.plot(history.history['loss'], label='Training Loss')
+# Plot the validation loss
+plt.plot(history.history['val_loss'], label='Validation Loss')
+
+plt.title('Training and Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# model.save('costume_model_2inputs.h5')
