@@ -65,22 +65,6 @@ bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_
 # Homogeneous Dirichlet Boundary condition at the top side
 bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0, 0.0], boundary_top)
 
-# Modify the boundary_condition_u and boundary_condition_v functions
-# boundary_condition_u = dde.DirichletBC(
-#     spatial_domain,
-#     lambda x: 1.0 if any(dde.utils.isclose(x[0], 1)) else 0.0,
-#     lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
-#     component=0,
-# )
-#
-# boundary_condition_v = dde.DirichletBC(
-#     spatial_domain,
-#     lambda x: 1.0 if any(dde.utils.isclose(x[1], 0)) else 0.0,
-#     lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
-#     component=1,
-# )
-
-
 
 # Modify the boundary_condition_u and boundary_condition_v functions
 boundary_condition_u = dde.DirichletBC(
