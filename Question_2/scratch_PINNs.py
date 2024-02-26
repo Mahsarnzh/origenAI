@@ -268,7 +268,8 @@ def main():
     p = pressure.flatten()[:, None]
 
     # Training Data
-    idx = np.random.choice(3721, 1000, replace=False)
+    Num_data_points = 100
+    idx = np.random.choice(3721, Num_data_points, replace=False)
     x_train = x[idx, :]
     y_train = y[idx, :]
     u_train = u[idx, :]
@@ -289,7 +290,7 @@ def main():
     # Create and train the model
     pinn.train(num_epochs=100)
 
-    u_out, v_out, p_out, _, _, _ = pinn.function(x_test, y_test)
+    u_out, v_out, p_out, _, _, _ = pinn.function(x_train, y_test)
 
     # Plot pressure using heatmap
     p_out_np = p_out.detach().numpy()

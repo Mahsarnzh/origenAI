@@ -53,23 +53,28 @@ def boundary_top(x, on_boundary):
 
 # xmin – Coordinate of bottom left corner.
 # xmax – Coordinate of top right corner.
+# xmin – Coordinate of bottom left corner.
+# xmax – Coordinate of top right corner.
+
 # Explicitly set orientation to ensure consistent color mapping
-spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1], orientation="xy")
+spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1])
 
 # Define boundary conditions
-bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_left)
-bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_right)
-bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_bottom)
+bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_left)
+bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_right)
+bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_bottom)
 
 # Homogeneous Dirichlet Boundary condition at the top side
-bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0], boundary_top)
+bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0, 0.0], boundary_top)
 
+# Modify the boundary_condition_u and boundary_condition_v functions
 boundary_condition_u = dde.DirichletBC(
     spatial_domain,
     lambda x: 1.0 if any(dde.utils.isclose(x[0], 1)) else 0.0,
     lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
     component=0,
 )
+
 
 # Homogeneous Neumann Boundary condition at the left, right, and bottom sides
 boundary_condition_v = dde.DirichletBC(
@@ -101,7 +106,7 @@ net = dde.nn.FNN([2] + 8 * [50] + [3], "tanh", "Glorot normal")
 
 model = dde.Model(data, net)
 model.compile("L-BFGS")
-losshistory, train_state = model.train(iterations=100)
+losshistory, train_state = model.train(iterations=40)
 
 
 ###### Data.npy
@@ -158,12 +163,12 @@ plt.title("Predicted U Component")
 
 # Plot Exact V Component
 plt.subplot(1, 6, 3)
-plt.tricontourf(x.flatten(), y.flatten(), v_exact, cmap="viridis", levels=20)
+plt.tricontourf(x.flatten(), y.flatten(), -v_exact, cmap="viridis", levels=20)
 plt.title("Exact V Component")
 
 # Plot Predicted V Component
 plt.subplot(1, 6, 4)
-plt.tricontourf(x.flatten(), y.flatten(), -v_pred, cmap="viridis", levels=20)
+plt.tricontourf(x.flatten(), y.flatten(), v_pred, cmap="viridis", levels=20)
 plt.title("Predicted V Component")
 
 # Plot Exact Pressure

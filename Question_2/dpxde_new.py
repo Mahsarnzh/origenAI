@@ -35,6 +35,7 @@ def pde(x, u):
     return [momentum_x, momentum_y, continuity]
 
 
+
 def boundary_left(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[0], 0)
 
@@ -46,17 +47,22 @@ def boundary_right(x, on_boundary):
 def boundary_bottom(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[1], 0)
 
-
-# def boundary_top(x, on_boundary):
-#     return on_boundary and dde.utils.isclose(x[1], 1)
 def boundary_top(x, on_boundary):
     return on_boundary and dde.utils.isclose(x[1], 1)
 
 
 # xmin – Coordinate of bottom left corner.
 # xmax – Coordinate of top right corner.
+
 # Explicitly set orientation to ensure consistent color mapping
 spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1])
+
+# Homogeneous Dirichlet Boundary condition at the top side
+bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0, 0.0], boundary_top)
+
+# Randomly select 100 points in the domain for training
+num_random_points = 100
+random_points = np.random.rand(num_random_points, 2)
 
 # Define boundary conditions
 bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_left)
@@ -65,26 +71,6 @@ bc_bottom = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0], boundary_botto
 
 # Homogeneous Dirichlet Boundary condition at the top side
 bc_top = dde.DirichletBC(spatial_domain, lambda x: [1.0, 0.0, 0.0], boundary_top)
-
-# boundary_condition_u = dde.DirichletBC(
-#     spatial_domain,
-#     lambda x: 1.0 if any(dde.utils.isclose(x[0], 1)) else 0.0,
-#     lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
-#     component=0,
-# )
-#
-# # Homogeneous Neumann Boundary condition at the left, right, and bottom sides
-# boundary_condition_v = dde.DirichletBC(
-#     spatial_domain,
-#     lambda x: 0.0,
-#     lambda x, on_boundary: (
-#         on_boundary
-#         and not dde.utils.isclose(x[1], 0)
-#         and not dde.utils.isclose(x[0], 1)
-#         and not dde.utils.isclose(x[1], 0)
-#     ),
-#     component=1,
-# )
 
 # Modify the boundary condition for u at the top side
 boundary_condition_u = dde.DirichletBC(
@@ -106,16 +92,17 @@ boundary_condition_v = dde.DirichletBC(
     component=1,
 )
 
-
+# Remove the Dirichlet boundary conditions for u and v
 
 data = dde.data.PDE(
     spatial_domain,
     pde,
-    [bc_left, bc_right, bc_bottom, bc_top, boundary_condition_u, boundary_condition_v],
-    num_domain=500,  # Adjust the number of points in the domain as needed
+    [bc_left, bc_right, bc_bottom, bc_top, boundary_condition_u],
+    num_domain=num_random_points,  # Use only 100 random points
     num_boundary=400,
     num_test=1024,
 )
+
 
 
 
