@@ -267,18 +267,13 @@ def main():
     p = pressure.flatten()[:, None]
 
     # Training Data, I changed to 1000 so that the model predicts more accurate for contour plots
-    num_data_points = 1000
+    num_data_points = 100
     idx = np.random.choice(3721, num_data_points, replace=True)
     x_train = x[idx, :]
     y_train = y[idx, :]
     u_train = u[idx, :]
     v_train = v[idx, :]
     p_train = p[idx, :]
-    # x_train = x
-    # y_train = y
-    # u_train = u
-    # v_train = v
-    # p_train = p
 
     pinn = NavierStokes(x_train, y_train, u_train, v_train, p_train)
     pinn.net.eval()
