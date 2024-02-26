@@ -176,15 +176,65 @@ class NavierStokes:
 
 def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
     # Plot Contours of Prediction vs Data
-    plt.figure(figsize=(15, 5))
+    # # Plot pred U Component
+    # plt.subplot(1, 6, 1)
+    # side_length = int(np.sqrt(u_out_np.shape[0]))
+    # u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
+    # plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
+    # plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    # plt.title("Predicted U Component")
+    #
+    # # Plot Exact U Component
+    # plt.subplot(1, 6, 2)
+    # side_length = int(np.sqrt(u.shape[0]))
+    # u_reshaped = u.reshape(side_length, side_length)
+    # plt.contourf(u_reshaped, cmap=cm.viridis)
+    # plt.tricontourf(XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20)
+    # plt.title("Exact U Component")
+    #
+    # # Plot Predicted P Component
+    # plt.subplot(1, 6, 3)
+    # side_length = int(np.sqrt(p_out_np.shape[0]))
+    # p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
+    # plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
+    # plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    # plt.title("Predicted P Component")
+    #
+    # # Plot Exact P Component
+    # plt.subplot(1, 6, 4)
+    # side_length = int(np.sqrt(p.shape[0]))
+    # p_np_reshaped = p.reshape(side_length, side_length)
+    # plt.contourf(p_np_reshaped, cmap=cm.viridis)
+    # plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
+    # plt.title("Exact P Component")
+    #
+    # # Plot Predicted V Component
+    # plt.subplot(1, 6, 5)
+    # side_length = int(np.sqrt(v_out_np.shape[0]))
+    # v_out_np_reshaped = v_out_np.reshape(side_length, side_length)
+    # plt.contourf(v_out_np_reshaped, cmap=cm.viridis)
+    # plt.tricontourf(XX.flatten(), YY.flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    # plt.title("Predicted V Component")
+    #
+    # # Plot Exact V Component
+    # plt.subplot(1, 6, 6)
+    # side_length = int(np.sqrt(v.shape[0]))
+    # v_reshaped = v.reshape(side_length, side_length)
+    # plt.contourf(v_reshaped, cmap=cm.viridis)
+    # plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
+    # plt.title("Exact V Component")
+    #
+    # plt.figure()
+    # plt.plot(loss_history, label="Loss")
+    # plt.xlabel("Iteration")
+    # plt.ylabel("Loss")
+    # plt.legend()
+    # plt.title("Training Loss History")
+    #
+    # plt.show()
 
-    # Plot pred U Component
-    plt.subplot(1, 6, 1)
-    side_length = int(np.sqrt(u_out_np.shape[0]))
-    u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
-    plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Predicted U Component")
+
+    plt.figure(figsize=(15, 5))
 
     # Plot Exact U Component
     plt.subplot(1, 6, 2)
@@ -194,21 +244,22 @@ def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
     plt.tricontourf(XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20)
     plt.title("Exact U Component")
 
-    # Plot Predicted P Component
-    plt.subplot(1, 6, 3)
-    side_length = int(np.sqrt(p_out_np.shape[0]))
-    p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
-    plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Predicted P Component")
+    # Plot pred U Component
+    plt.subplot(1, 6, 1)
+    side_length = int(np.sqrt(u_out_np.shape[0]))
+    u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
+    plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Predicted U Component")
 
-    # Plot Exact P Component
-    plt.subplot(1, 6, 4)
-    side_length = int(np.sqrt(p.shape[0]))
-    p_np_reshaped = p.reshape(side_length, side_length)
-    plt.contourf(p_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Exact P Component")
+
+    # Plot Exact V Component
+    plt.subplot(1, 6, 6)
+    side_length = int(np.sqrt(v.shape[0]))
+    v_reshaped = v.reshape(side_length, side_length)
+    plt.contourf(v_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Exact V Component")
 
     # Plot Predicted V Component
     plt.subplot(1, 6, 5)
@@ -218,13 +269,23 @@ def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
     plt.tricontourf(XX.flatten(), YY.flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
     plt.title("Predicted V Component")
 
-    # Plot Exact V Component
-    plt.subplot(1, 6, 6)
-    side_length = int(np.sqrt(v.shape[0]))
-    v_reshaped = v.reshape(side_length, side_length)
-    plt.contourf(v_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Exact V Component")
+    # Plot Predicted P Component
+    plt.subplot(1, 6, 3)
+    side_length = int(np.sqrt(p_out_np.shape[0]))
+    p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
+    plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Predicted Pressure")
+
+    # Plot Exact P Component
+    plt.subplot(1, 6, 4)
+    side_length = int(np.sqrt(p.shape[0]))
+    p_np_reshaped = p.reshape(side_length, side_length)
+    plt.contourf(p_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Exact Pressure")
+
+
 
     plt.figure()
     plt.plot(loss_history, label="Loss")

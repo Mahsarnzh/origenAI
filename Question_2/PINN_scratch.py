@@ -149,9 +149,9 @@ class NavierStokes:
                 10 * u_loss +
                 10 * v_loss +
                 10 * p_loss +
-                1000 * f_loss +
-                1000 * g_loss +
-                1000 * continuity_loss
+                100 * f_loss +
+                100 * g_loss +
+                100 * continuity_loss
         )
 
         # derivative with respect to net's weights:
@@ -172,70 +172,41 @@ class NavierStokes:
             self.optimizer.step(self.closure)
             print("Epoch: {:}, Loss: {:0.6f}".format(epoch + 1, self.ls))
 
+    def plot_results(self, x_test, y_test, x, y, u_velocity, v_velocity, pressure):
+        self.net.eval()
 
+        u_out, v_out, p_out, _, _, _ = self.function(x_test, y_test)
 
-def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
-    # Plot Contours of Prediction vs Data
-    plt.figure(figsize=(15, 5))
+        # Figure 1: Heatmap of Pressure
+        plt.figure(figsize=(8, 6))
+        p_out_np = p_out.detach().numpy()
+        sns.heatmap(p_out_np, cmap="viridis", cbar=True)
+        plt.xlabel("X-axis")
+        plt.ylabel("Y-axis")
+        plt.title("Pressure Field")
+        plt.show()
 
-    # Plot pred U Component
-    plt.subplot(1, 6, 1)
-    side_length = int(np.sqrt(u_out_np.shape[0]))
-    u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
-    plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Predicted U Component")
+        # Figure 2: Quiver plot of Velocity Field
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(pressure, cmap="viridis", cbar=True)
+        plt.quiver(x, y, u_velocity, v_velocity, color="red", scale=20)
+        plt.xlim((0, 1))
+        plt.ylim((0, 1))
+        plt.xlabel("X-axis")
+        plt.ylabel("Y-axis")
+        plt.title("Velocity Field")
+        plt.show()
 
-    # Plot Exact U Component
-    plt.subplot(1, 6, 2)
-    side_length = int(np.sqrt(u.shape[0]))
-    u_reshaped = u.reshape(side_length, side_length)
-    plt.contourf(u_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Exact U Component")
+        # Figure 3: Another representation of Velocity Field
+        plt.figure(figsize=(8, 6))
+        plt.quiver(x, y, u_velocity, v_velocity, color="blue", scale=20)
+        plt.xlim((0, 1))
+        plt.ylim((0, 1))
+        plt.xlabel("X-axis")
+        plt.ylabel("Y-axis")
+        plt.title("Velocity Field (Quiver Plot)")
+        plt.show()
 
-    # Plot Predicted P Component
-    plt.subplot(1, 6, 3)
-    side_length = int(np.sqrt(p_out_np.shape[0]))
-    p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
-    plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Predicted P Component")
-
-    # Plot Exact P Component
-    plt.subplot(1, 6, 4)
-    side_length = int(np.sqrt(p.shape[0]))
-    p_np_reshaped = p.reshape(side_length, side_length)
-    plt.contourf(p_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Exact P Component")
-
-    # Plot Predicted V Component
-    plt.subplot(1, 6, 5)
-    side_length = int(np.sqrt(v_out_np.shape[0]))
-    v_out_np_reshaped = v_out_np.reshape(side_length, side_length)
-    plt.contourf(v_out_np_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Predicted V Component")
-
-    # Plot Exact V Component
-    plt.subplot(1, 6, 6)
-    side_length = int(np.sqrt(v.shape[0]))
-    v_reshaped = v.reshape(side_length, side_length)
-    plt.contourf(v_reshaped, cmap=cm.viridis)
-    plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
-    plt.title("Exact V Component")
-
-    plt.figure()
-    plt.plot(loss_history, label="Loss")
-    plt.xlabel("Iteration")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.title("Training Loss History")
-
-    plt.show()
-
-# Usage
 
 # noinspection PyPep8Naming
 def main():
@@ -248,6 +219,8 @@ def main():
     x = data_array.tolist()["x"]
     y = data_array.tolist()["y"]
 
+    # x_test = x[:, 0:1]
+    # y_test = y[:, 0:1]
     x_test = x
     y_test = y
     x_test = x_test.reshape(-1, 1)
@@ -266,19 +239,18 @@ def main():
     u = UU.flatten()[:, None]  # NN x 1
     v = VV.flatten()[:, None]  # NN x 1
     p = pressure.flatten()[:, None]
-
     # Training Data
-    idx = np.random.choice(3721, 1000, replace=False)
-    x_train = x[idx, :]
-    y_train = y[idx, :]
-    u_train = u[idx, :]
-    v_train = v[idx, :]
-    p_train = p[idx, :]
-    # x_train = x
-    # y_train = y
-    # u_train = u
-    # v_train = v
-    # p_train = p
+    # idx = np.random.choice(10, 100, replace=True)
+    # x_train = x[idx, :]
+    # y_train = y[idx, :]
+    # u_train = u[idx, :]
+    # v_train = v[idx, :]
+    # p_train = p[idx, :]
+    x_train = x
+    y_train = y
+    u_train = u
+    v_train = v
+    p_train = p
 
     pinn = NavierStokes(x_train, y_train, u_train, v_train, p_train)
     pinn.net.eval()
@@ -289,6 +261,12 @@ def main():
     # Create and train the model
     pinn.train(num_epochs=100)
 
+
+    # # Plot results
+    # pinn.plot_results(x_test, y_test, x, y, u_velocity, v_velocity, pressure)
+
+
+
     u_out, v_out, p_out, _, _, _ = pinn.function(x_test, y_test)
 
     # Plot pressure using heatmap
@@ -296,7 +274,77 @@ def main():
     v_out_np = v_out.detach().numpy()
     u_out_np = u_out.detach().numpy()
 
-    plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, pinn.loss_history)
+    # Plot contour for p_out vs p
+    plt.figure(figsize=(8, 6))
+    side_length = int(np.sqrt(p_out_np.shape[0]))
+    p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
+    plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
+    plt.colorbar()
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.title("Contour Plot: p_out vs p")
+    plt.show()
+
+    # Plot Contours of Prediction vs Data
+    plt.figure(figsize=(5, 5))
+    # Plot pred V Component
+    plt.subplot(1, 6, 1)
+    side_length = int(np.sqrt(u_out_np.shape[0]))
+    u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
+    plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Predicted U Component")
+
+    # Plot Exact V Component
+    plt.subplot(1, 6, 2)
+    side_length = int(np.sqrt(u.shape[0]))
+    u_reshaped = u.reshape(side_length, side_length)
+    plt.contourf(u_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Exact U Component")
+
+
+    # Plot Exact P Component
+    plt.subplot(1, 6, 3)
+    side_length = int(np.sqrt(p_out_np.shape[0]))
+    p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
+    plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Predicted P Component")
+
+    # Plot Exact P Component
+    plt.subplot(1, 6, 4)
+    side_length = int(np.sqrt(p.shape[0]))
+    p_np_reshaped = p.reshape(side_length, side_length)
+    plt.contourf(p_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Exact P Component")
+
+    # Plot pred V Component
+    plt.subplot(1, 6, 5)
+    side_length = int(np.sqrt(v_out_np.shape[0]))
+    v_out_np_reshaped = v_out_np.reshape(side_length, side_length)
+    plt.contourf(v_out_np_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Predicted V Component")
+
+    # Plot Exact V Component
+    plt.subplot(1, 6, 6)
+    side_length = int(np.sqrt(v.shape[0]))
+    v_reshaped = v.reshape(side_length, side_length)
+    plt.contourf(v_reshaped, cmap=cm.viridis)
+    plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
+    plt.title("Exact V Component")
+
+
+    plt.figure()
+    plt.plot(pinn.loss_history, label="Loss")
+    plt.xlabel("Iteration")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.title("Training Loss History")
+
+    plt.show()
 
 
 if __name__ == "__main__":
