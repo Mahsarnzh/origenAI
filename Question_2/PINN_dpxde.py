@@ -53,12 +53,9 @@ def boundary_top(x, on_boundary):
 
 # xmin – Coordinate of bottom left corner.
 # xmax – Coordinate of top right corner.
-# xmin – Coordinate of bottom left corner.
-# xmax – Coordinate of top right corner.
 
 # Explicitly set orientation to ensure consistent color mapping
 spatial_domain = dde.geometry.Rectangle(xmin=[0, 0], xmax=[1, 1])
-
 # Define boundary conditions
 bc_left = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_left)
 bc_right = dde.DirichletBC(spatial_domain, lambda x: [0.0, 0.0, 0.0], boundary_right)
@@ -75,20 +72,12 @@ boundary_condition_u = dde.DirichletBC(
     component=0,
 )
 
-
-# Homogeneous Neumann Boundary condition at the left, right, and bottom sides
 boundary_condition_v = dde.DirichletBC(
     spatial_domain,
-    lambda x: 0.0,
-    lambda x, on_boundary: (
-        on_boundary
-        and not dde.utils.isclose(x[1], 1)
-        and not dde.utils.isclose(x[1], 0)
-    ),
+    lambda x: 1.0 if any(dde.utils.isclose(x[1], 0)) else 0.0,
+    lambda x, on_boundary: on_boundary and not dde.utils.isclose(x[1], 1),
     component=1,
 )
-
-
 
 data = dde.data.PDE(
     spatial_domain,
@@ -98,8 +87,6 @@ data = dde.data.PDE(
     num_boundary=400,
     num_test=1024,
 )
-
-
 
 # Solve the problem
 net = dde.nn.FNN([2] + 8 * [50] + [3], "tanh", "Glorot normal")
