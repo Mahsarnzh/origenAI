@@ -268,7 +268,7 @@ def main():
     p = pressure.flatten()[:, None]
     # Training Data
     Num_data_points = 100
-    idx = np.random.choice(10, Num_data_points, replace=True)
+    idx = np.random.choice(1000, Num_data_points, replace=True)
     x_train = x[idx, :]
     y_train = y[idx, :]
     u_train = u[idx, :]
