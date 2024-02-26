@@ -9,4 +9,4 @@ Contours of predictions using deepxde library:
 ![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/contour_01.png)
 
 Contours of predictions using my method PINNs from Scratch:
-![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/PINNs_Scratch_Contour_01.png)
+![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/PINNs_Scratch_Contour_02.png)
