@@ -5,7 +5,7 @@ I employed two distinct approaches for predicting velocities in the x and y dire
 As a side note, the "Navier_Stokes.py" file focuses on solving the lid-driven cavity flow using numerical methods. Although not directly involved in the test, its inclusion significantly contributed to my understanding of the problem's structure.
 
 
-Contours of predictions using deepxde library:
+Contours of predictions using deepxde library, PINN_dpxde.py:
 ![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/contour_01.png)
 
 Contours of predictions using my method, PINN_scratch.py:
