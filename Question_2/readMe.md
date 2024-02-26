@@ -8,5 +8,5 @@ As a side note, the "Navier_Stokes.py" file focuses on solving the lid-driven ca
 Contours of predictions using deepxde library:
 ![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/contour_01.png)
 
-Contours of predictions using my method PINNs from Scratch:
+Contours of predictions using my method, PINN_scratch.py:
 ![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/PINNs_Scratch_Contour_02.png)
