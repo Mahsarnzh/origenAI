@@ -173,57 +173,57 @@ class NavierStokes:
             print("Epoch: {:}, Loss: {:0.6f}".format(epoch + 1, self.ls))
 
     @staticmethod
-    def plot_contours(self, u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
+    def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
         # Plot Contours of Prediction vs Data
         plt.figure(figsize=(15, 5))
 
-        # Plot pred U Component
-        plt.subplot(1, 6, 1)
-        side_length = int(np.sqrt(u_out_np.shape[0]))
-        u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
-        plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-        plt.title("Predicted U Component")
-
         # Plot Exact U Component
-        plt.subplot(1, 6, 2)
+        plt.subplot(1, 6, 1)
         side_length = int(np.sqrt(u.shape[0]))
         u_reshaped = u.reshape(side_length, side_length)
         plt.contourf(u_reshaped, cmap=cm.viridis)
         plt.tricontourf(XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20)
         plt.title("Exact U Component")
 
-        # Plot Predicted P Component
-        plt.subplot(1, 6, 3)
-        side_length = int(np.sqrt(p_out_np.shape[0]))
-        p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
-        plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
-        plt.title("Predicted P Component")
+        # Plot pred U Component
+        plt.subplot(1, 6, 2)
+        side_length = int(np.sqrt(u_out_np.shape[0]))
+        u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
+        plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
+        plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.title("Predicted U Component")
 
-        # Plot Exact P Component
-        plt.subplot(1, 6, 4)
-        side_length = int(np.sqrt(p.shape[0]))
-        p_np_reshaped = p.reshape(side_length, side_length)
-        plt.contourf(p_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
-        plt.title("Exact P Component")
+        # Plot Exact V Component
+        plt.subplot(1, 6, 3)
+        side_length = int(np.sqrt(v.shape[0]))
+        v_reshaped = v.reshape(side_length, side_length)
+        plt.contourf(v_reshaped, cmap=cm.viridis)
+        plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.title("Exact V Component")
 
         # Plot Predicted V Component
-        plt.subplot(1, 6, 5)
+        plt.subplot(1, 6, 4)
         side_length = int(np.sqrt(v_out_np.shape[0]))
         v_out_np_reshaped = v_out_np.reshape(side_length, side_length)
         plt.contourf(v_out_np_reshaped, cmap=cm.viridis)
         plt.tricontourf(XX.flatten(), YY.flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
         plt.title("Predicted V Component")
 
-        # Plot Exact V Component
+        # Plot Exact P Component
+        plt.subplot(1, 6, 5)
+        side_length = int(np.sqrt(p.shape[0]))
+        p_np_reshaped = p.reshape(side_length, side_length)
+        plt.contourf(p_np_reshaped, cmap=cm.viridis)
+        plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.title("Exact Pressure")
+
+        # Plot Predicted P Component
         plt.subplot(1, 6, 6)
-        side_length = int(np.sqrt(v.shape[0]))
-        v_reshaped = v.reshape(side_length, side_length)
-        plt.contourf(v_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
-        plt.title("Exact V Component")
+        side_length = int(np.sqrt(p_out_np.shape[0]))
+        p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
+        plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
+        plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.title("Predicted Pressure")
 
         plt.figure()
         plt.plot(loss_history, label="Loss")
@@ -233,7 +233,6 @@ class NavierStokes:
         plt.title("Training Loss History")
 
         plt.show()
-
 
 
 def main():
@@ -266,9 +265,10 @@ def main():
     u = UU.flatten()[:, None]  # NN x 1
     v = VV.flatten()[:, None]  # NN x 1
     p = pressure.flatten()[:, None]
-    # Training Data
-    Num_data_points = 100
-    idx = np.random.choice(1000, Num_data_points, replace=True)
+
+    # Training Data, I changed to 1000 so that the model predicts more accurate for contour plots
+    num_data_points = 1000
+    idx = np.random.choice(3721, num_data_points, replace=True)
     x_train = x[idx, :]
     y_train = y[idx, :]
     u_train = u[idx, :]
@@ -289,16 +289,12 @@ def main():
     # Create and train the model
     pinn.train(num_epochs=100)
 
-    # Plot results
-    # pinn.plot_results(x_test, y_test, x, y, u_velocity, v_velocity, pressure)
-
     u_out, v_out, p_out, _, _, _ = pinn.function(x_test, y_test)
 
-    # Plot pressure using heatmap
+    # Plot results
     p_out_np = p_out.detach().numpy()
     v_out_np = v_out.detach().numpy()
     u_out_np = u_out.detach().numpy()
-
     pinn.plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, pinn.loss_history)
 
 
