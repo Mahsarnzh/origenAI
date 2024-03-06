@@ -7,17 +7,12 @@ import torch
 import torch.nn as nn
 import numpy as np
 from matplotlib import pyplot as plt
-import seaborn as sns
 from matplotlib import cm
-
-import matplotlib.animation as animation
-from torch.nn import Sequential
 
 Re = 100
 nu = 1 / Re
 
 
-# noinspection PyPep8Naming
 class NavierStokes:
     def __init__(self, X, Y, u, v, p):
         self.x = (
@@ -77,10 +72,10 @@ class NavierStokes:
             0
         ]
         v = (
-            -1.0
-            * torch.autograd.grad(
-                psi, x, grad_outputs=torch.ones_like(psi), create_graph=True
-            )[0]
+                -1.0
+                * torch.autograd.grad(
+            psi, x, grad_outputs=torch.ones_like(psi), create_graph=True
+        )[0]
         )
 
         u_x = torch.autograd.grad(
@@ -173,7 +168,7 @@ class NavierStokes:
             print("Epoch: {:}, Loss: {:0.6f}".format(epoch + 1, self.ls))
 
     @staticmethod
-    def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history):
+    def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history, x_test, y_test):
         # Plot Contours of Prediction vs Data
         plt.figure(figsize=(15, 5))
 
@@ -190,7 +185,8 @@ class NavierStokes:
         side_length = int(np.sqrt(u_out_np.shape[0]))
         u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
         plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(x_test.detach().numpy().flatten(), y_test.detach().numpy().flatten(),
+                        u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
         plt.title("Predicted U Component")
 
         # Plot Exact V Component
@@ -206,7 +202,7 @@ class NavierStokes:
         side_length = int(np.sqrt(v_out_np.shape[0]))
         v_out_np_reshaped = v_out_np.reshape(side_length, side_length)
         plt.contourf(v_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(x_test.detach().numpy().flatten(), y_test.detach().numpy().flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
         plt.title("Predicted V Component")
 
         # Plot Exact P Component
@@ -222,7 +218,7 @@ class NavierStokes:
         side_length = int(np.sqrt(p_out_np.shape[0]))
         p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
         plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(x_test.detach().numpy().flatten(), y_test.detach().numpy().flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
         plt.title("Predicted Pressure")
 
         plt.figure()
@@ -244,13 +240,8 @@ def main():
     v_velocity = data_array.tolist()["v_velocity"]
     x = data_array.tolist()["x"]
     y = data_array.tolist()["y"]
-
-    # x_test = x[:, 0:1]
-    # y_test = y[:, 0:1]
-    x_test = x
-    y_test = y
-    x_test = x_test.reshape(-1, 1)
-    y_test = y_test.reshape(-1, 1)
+    x_test = x[20:61, 20:61].reshape(-1, 1)
+    y_test = y[20:61, 20:61].reshape(-1, 1)
 
     # Rearrange Data
     XX = x  # N x N
@@ -268,13 +259,16 @@ def main():
 
     # Training Data, I changed to 1000 so that the model predicts more accurate for contour plots
     num_data_points = 100
-    idx = np.random.choice(3721, num_data_points, replace=True)
+    idx = np.random.choice(3721, num_data_points, replace=False)
     x_train = x[idx, :]
     y_train = y[idx, :]
     u_train = u[idx, :]
     v_train = v[idx, :]
     p_train = p[idx, :]
-
+    # x_test = x_test.reshape(-1, 1)
+    # y_test = y_test.reshape(-1, 1)
+    x_test = x.reshape(-1, 1)
+    y_test = y.reshape(-1, 1)
     pinn = NavierStokes(x_train, y_train, u_train, v_train, p_train)
     pinn.net.eval()
 
@@ -290,7 +284,7 @@ def main():
     p_out_np = p_out.detach().numpy()
     v_out_np = v_out.detach().numpy()
     u_out_np = u_out.detach().numpy()
-    pinn.plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, pinn.loss_history)
+    pinn.plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, pinn.loss_history,  x_test, y_test)
 
 
 if __name__ == "__main__":
