@@ -6,7 +6,7 @@ As a side note, the "Navier_Stokes.py" file focuses on solving the lid-driven ca
 
 
 Contours of predictions using deepxde library, PINN_dpxde.py:
-![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/contour_01.png)
+![Sample Image](https://github.com/Mahsarnzh/origenAI/tree/main/lid_driven_cavity_PINNS/contour_01.png)
 
 Contours of predictions using my method, PINN_scratch.py:
 ![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/PINNs_Scratch_Contour_02.png)
