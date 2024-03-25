@@ -9,4 +9,4 @@ Contours of predictions using deepxde library, PINN_dpxde.py:
 ![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/lid_driven_cavity_PINNS/PINNs_Scratch_Contour_01.png)
 
 Contours of predictions using my method, PINN_scratch.py:
-![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/Question_2/PINNs_Scratch_Contour_02.png)
+![Sample Image](https://github.com/Mahsarnzh/origenAI/blob/main/lid_driven_cavity_PINNS/PINNs_Scratch_Contour_02.png)
