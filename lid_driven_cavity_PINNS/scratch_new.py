@@ -13,6 +13,7 @@ Re = 100
 nu = 1 / Re
 
 
+# noinspection PyPep8Naming
 class NavierStokes:
     def __init__(self, X, Y, u, v, p):
         self.x = (
@@ -54,30 +55,27 @@ class NavierStokes:
     @staticmethod
     def get_network():
         return nn.Sequential(
-            nn.Linear(2, 20),
+            nn.Linear(2, 500),
             nn.Tanh(),
-            nn.Linear(20, 20),
+            nn.Linear(500, 500),
             nn.Tanh(),
-            nn.Linear(20, 2),
+            nn.Linear(500, 2),
             nn.Tanh(),  # Add an activation function to squash values between -1 and 1
         )
 
     def function(self, x, y):
         res = self.net(torch.hstack((x, y)))
-        psi, p = res[:, 0:1], res[:, 1:2]
+        p, psi = res[:, 0:1], res[:, 1:2]
 
         u = torch.autograd.grad(
             psi, y, grad_outputs=torch.ones_like(psi), create_graph=True
-        )[
-            0
-        ]
-        v = (
-                -1.0
-                * torch.autograd.grad(
-            psi, x, grad_outputs=torch.ones_like(psi), create_graph=True
         )[0]
+        v = (
+            -1.0
+            * torch.autograd.grad(
+                psi, x, grad_outputs=torch.ones_like(psi), create_graph=True
+            )[0]
         )
-
         u_x = torch.autograd.grad(
             u, x, grad_outputs=torch.ones_like(u), create_graph=True
         )[0]
@@ -141,12 +139,12 @@ class NavierStokes:
 
         # Assign different weights to losses
         total_loss = (
-                10 * u_loss +
-                10 * v_loss +
-                10 * p_loss +
-                100 * f_loss +
-                100 * g_loss +
-                100 * continuity_loss
+            10 * u_loss
+            + 10 * v_loss
+            + 10 * p_loss
+            + 100 * f_loss
+            + 100 * g_loss
+            + 100 * continuity_loss
         )
 
         # derivative with respect to net's weights:
@@ -168,7 +166,9 @@ class NavierStokes:
             print("Epoch: {:}, Loss: {:0.6f}".format(epoch + 1, self.ls))
 
     @staticmethod
-    def plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history, x_test, y_test):
+    def plot_contours(
+        u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, loss_history, x_test, y_test
+    ):
         # Plot Contours of Prediction vs Data
         plt.figure(figsize=(15, 5))
 
@@ -177,7 +177,9 @@ class NavierStokes:
         side_length = int(np.sqrt(u.shape[0]))
         u_reshaped = u.reshape(side_length, side_length)
         plt.contourf(u_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(
+            XX.flatten(), YY.flatten(), u_reshaped.flatten(), cmap="viridis", levels=20
+        )
         plt.title("Exact U Component")
 
         # Plot pred U Component
@@ -185,8 +187,13 @@ class NavierStokes:
         side_length = int(np.sqrt(u_out_np.shape[0]))
         u_out_np_reshaped = u_out_np.reshape(side_length, side_length)
         plt.contourf(u_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(x_test.detach().numpy().flatten(), y_test.detach().numpy().flatten(),
-                        u_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(
+            x_test.detach().numpy().flatten(),
+            y_test.detach().numpy().flatten(),
+            u_out_np_reshaped.flatten(),
+            cmap="viridis",
+            levels=20,
+        )
         plt.title("Predicted U Component")
 
         # Plot Exact V Component
@@ -194,7 +201,9 @@ class NavierStokes:
         side_length = int(np.sqrt(v.shape[0]))
         v_reshaped = v.reshape(side_length, side_length)
         plt.contourf(v_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(
+            XX.flatten(), YY.flatten(), v_reshaped.flatten(), cmap="viridis", levels=20
+        )
         plt.title("Exact V Component")
 
         # Plot Predicted V Component
@@ -202,7 +211,13 @@ class NavierStokes:
         side_length = int(np.sqrt(v_out_np.shape[0]))
         v_out_np_reshaped = v_out_np.reshape(side_length, side_length)
         plt.contourf(v_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(x_test.detach().numpy().flatten(), y_test.detach().numpy().flatten(), v_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(
+            x_test.detach().numpy().flatten(),
+            y_test.detach().numpy().flatten(),
+            v_out_np_reshaped.flatten(),
+            cmap="viridis",
+            levels=20,
+        )
         plt.title("Predicted V Component")
 
         # Plot Exact P Component
@@ -210,7 +225,13 @@ class NavierStokes:
         side_length = int(np.sqrt(p.shape[0]))
         p_np_reshaped = p.reshape(side_length, side_length)
         plt.contourf(p_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(XX.flatten(), YY.flatten(), p_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(
+            XX.flatten(),
+            YY.flatten(),
+            p_np_reshaped.flatten(),
+            cmap="viridis",
+            levels=20,
+        )
         plt.title("Exact Pressure")
 
         # Plot Predicted P Component
@@ -218,7 +239,13 @@ class NavierStokes:
         side_length = int(np.sqrt(p_out_np.shape[0]))
         p_out_np_reshaped = p_out_np.reshape(side_length, side_length)
         plt.contourf(p_out_np_reshaped, cmap=cm.viridis)
-        plt.tricontourf(x_test.detach().numpy().flatten(), y_test.detach().numpy().flatten(), p_out_np_reshaped.flatten(), cmap="viridis", levels=20)
+        plt.tricontourf(
+            x_test.detach().numpy().flatten(),
+            y_test.detach().numpy().flatten(),
+            p_out_np_reshaped.flatten(),
+            cmap="viridis",
+            levels=20,
+        )
         plt.title("Predicted Pressure")
 
         plt.figure()
@@ -265,10 +292,11 @@ def main():
     u_train = u[idx, :]
     v_train = v[idx, :]
     p_train = p[idx, :]
-    # x_test = x_test.reshape(-1, 1)
-    # y_test = y_test.reshape(-1, 1)
+
     x_test = x.reshape(-1, 1)
     y_test = y.reshape(-1, 1)
+    # x_test = x_test.reshape(-1, 1)
+    # y_test = y_test.reshape(-1, 1)
     pinn = NavierStokes(x_train, y_train, u_train, v_train, p_train)
     pinn.net.eval()
 
@@ -284,7 +312,9 @@ def main():
     p_out_np = p_out.detach().numpy()
     v_out_np = v_out.detach().numpy()
     u_out_np = u_out.detach().numpy()
-    pinn.plot_contours(u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, pinn.loss_history,  x_test, y_test)
+    pinn.plot_contours(
+        u_out_np, u, p_out_np, p, v_out_np, v, XX, YY, pinn.loss_history, x_test, y_test
+    )
 
 
 if __name__ == "__main__":
