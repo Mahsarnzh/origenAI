@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 
 
-def load_and_process_data(data_folder="./origen_interview_data/"):
+def load_and_process_data(data_folder="./origen_data/"):
     Inpu_nms = {
         "DEPTH",
         "TRANY",

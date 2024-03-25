@@ -3,7 +3,7 @@ import numpy as np
 
 
 def load_data():
-    directory = os.path.realpath("../../origen_interview_data/")
+    directory = os.path.realpath("../../origen_data/")
     input_names = {
         "DEPTH",
         "TRANY",
